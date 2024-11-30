@@ -1,6 +1,5 @@
 package io.github.diegolirio;
 
-import jakarta.ws.rs.core.Response;
 import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -12,6 +11,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.Theme;
 
+import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -32,8 +32,8 @@ public class EmailAuthenticator implements Authenticator , AuthenticatorFactory 
         System.out.println(">>>>>>>> "+ user + "  \n\n\n");
 
         int length = Integer.parseInt(config.getConfig().get("length"));
-        int ttl = Integer.parseInt(config.getConfig().get("ttl"));
-        String subject = config.getConfig().get("subject");
+        int ttl = 100; //Integer.parseInt(config.getConfig().get("ttl"));
+        String subject =  config.getConfig().get("subject");
 
         if(subject == null || subject.trim().isEmpty()) {
             subject = "Summit 2FA Code";
@@ -42,13 +42,13 @@ public class EmailAuthenticator implements Authenticator , AuthenticatorFactory 
         String code = "ABC123"; //org.keycloak.common.util. RandomString.randomCode(length);
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
         authSession.setAuthNote("code", code);
-        authSession.setAuthNote("ttl", Long.toString(System.currentTimeMillis() + (ttl * 1000L)));
+        authSession.setAuthNote("ttl", Long.toString(System.currentTimeMillis() + (10 * 1000L)));
 
         try {
-            Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
-            Locale locale = session.getContext().resolveLocale(user);
-            String emailAuthText = theme.getMessages(locale).getProperty("emailAuthText");
-            String emailText = String.format(emailAuthText, code, Math.floorDiv(ttl, 60));
+            //Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
+            //Locale locale = session.getContext().resolveLocale(user);
+            //String emailAuthText = theme.getMessages(locale).getProperty("emailAuthText");
+            String emailText = "Segue seu codigo valido por 2 minutes"; //String.format(emailAuthText, code, Math.floorDiv(ttl, 60));
 
             DefaultEmailSenderProvider senderProvider = new DefaultEmailSenderProvider(session);
             senderProvider.send(
@@ -60,7 +60,7 @@ public class EmailAuthenticator implements Authenticator , AuthenticatorFactory 
             );
 
 
-            context.challenge(context.form().setAttribute("realm", context.getRealm()).createForm(TPL_CODE));
+            //context.challenge(context.form().setAttribute("realm", context.getRealm()).createForm(TPL_CODE));
         } catch (Exception e) {
             context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR,
                     context.form().setError("emailAuthEmailNotSent", e.getMessage())
