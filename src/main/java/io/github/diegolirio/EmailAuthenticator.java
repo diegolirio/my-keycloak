@@ -1,17 +1,22 @@
 package io.github.diegolirio;
 
 import jakarta.ws.rs.core.Response;
+import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.email.DefaultEmailSenderProvider;
 import org.keycloak.models.*;
+import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.Theme;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
-public class EmailAuthenticator implements Authenticator {
+public class EmailAuthenticator implements Authenticator , AuthenticatorFactory {
 
     private static final String TPL_CODE = "login-email.ftl";
 
@@ -120,4 +125,68 @@ public class EmailAuthenticator implements Authenticator {
     @Override
     public void close() {
     }
+
+    @Override
+    public String getId() {
+        return "email-authenticator";
+    }
+
+    @Override
+    public String getDisplayType() {
+        return "Email Authentication";
+    }
+
+    @Override
+    public String getHelpText() {
+        return "Validates an OTP sent via EMAIL to the users email address.";
+    }
+
+    @Override
+    public String getReferenceCategory() {
+        return "otp";
+    }
+
+    @Override
+    public boolean isConfigurable() {
+        return true;
+    }
+
+    @Override
+    public boolean isUserSetupAllowed() {
+        return false;
+    }
+
+    @Override
+    public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+        return new AuthenticationExecutionModel.Requirement[]{
+                AuthenticationExecutionModel.Requirement.REQUIRED,
+                AuthenticationExecutionModel.Requirement.ALTERNATIVE,
+                AuthenticationExecutionModel.Requirement.DISABLED,
+        };
+    }
+
+    @Override
+    public List<ProviderConfigProperty> getConfigProperties() {
+        return Arrays.asList(
+                new ProviderConfigProperty("length", "Code length", "The number of digits of the generated code.", ProviderConfigProperty.STRING_TYPE, 6),
+                new ProviderConfigProperty("ttl", "Time-to-live", "The time to live in seconds for the code to be valid.", ProviderConfigProperty.STRING_TYPE, "300"),
+                new ProviderConfigProperty("senderId", "SenderId", "The sender ID is displayed as the message sender on the receiving device. (Not working!)", ProviderConfigProperty.STRING_TYPE, "Keycloak"),
+                new ProviderConfigProperty("subject", "E-Mail subject", "Subject for the email", ProviderConfigProperty.STRING_TYPE, "2FA Login Code")
+        );
+    }
+
+    @Override
+    public Authenticator create(KeycloakSession session) {
+        return new EmailAuthenticator();
+    }
+
+    @Override
+    public void init(Config.Scope config) {
+    }
+
+    @Override
+    public void postInit(KeycloakSessionFactory factory) {
+    }
+
+
 }

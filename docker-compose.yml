@@ -1,45 +1,37 @@
 version: "3.7"
 services:
-  keycloak-db-otp:
-    image: postgres:14
-    container_name: keycloak-db-otp
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: password
     volumes:
-      - keycloak-db-data-otp:/var/lib/postgresql/data
-    networks:
-      - keycloak-network
+      - postgres_data:/var/lib/postgresql/data
 
-  keycloak-otp:
-    image: quay.io/keycloak/keycloak:22.0.1
-    container_name: keycloak-otp
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.6
     environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
       DB_VENDOR: postgres
       DB_ADDR: keycloak-db
       DB_DATABASE: keycloak
       DB_USER: keycloak
       DB_PASSWORD: password
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HOSTNAME: localhost
-      #JAVA_OPTS: -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005 -javaagent:"/opt/keycloak/providers/spi-lib.jar"
+      JAVA_OPTS: -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005
     ports:
       - "8080:8080"
+      - "5005:5005"
     volumes:
-      - keycloak-data-otp:/opt/keycloak/data
-      - ./build/libs/lirio-keycloak-1.0-SNAPSHOT.jar:/opt/keycloak/providers/spi-lib.jar
-    networks:
-      - keycloak-network
-    depends_on:
-      - keycloak-db-otp
+      - ./build/libs:/opt/keycloak/providers
+    depends_on: ["postgres"]
     command:
       - start-dev
 
 volumes:
-  keycloak-db-data-otp:
-  keycloak-data-otp:
-
-networks:
-  keycloak-network:
+  postgres_data:
+    driver: local
