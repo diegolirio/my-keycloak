@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 public class EmailAuthenticator implements Authenticator , AuthenticatorFactory {
 
@@ -29,26 +30,27 @@ public class EmailAuthenticator implements Authenticator , AuthenticatorFactory 
         KeycloakSession session = context.getSession();
         UserModel user = context.getUser();
 
-        System.out.println(">>>>>>>> "+ user + "  \n\n\n");
-
         int length = Integer.parseInt(config.getConfig().get("length"));
-        int ttl = 100; //Integer.parseInt(config.getConfig().get("ttl"));
+        int ttl = Integer.parseInt(config.getConfig().get("ttl"));
         String subject =  config.getConfig().get("subject");
 
         if(subject == null || subject.trim().isEmpty()) {
             subject = "Summit 2FA Code";
         }
 
-        String code = "ABC123"; //org.keycloak.common.util. RandomString.randomCode(length);
+        String code = String.format("%0"+length+"d", new Random().nextInt(999999));
+
+        System.out.println(">>>>>>>> OTP ---- "+ code + "  \n\n\n");
+
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
         authSession.setAuthNote("code", code);
-        authSession.setAuthNote("ttl", Long.toString(System.currentTimeMillis() + (10 * 1000L)));
+        authSession.setAuthNote("ttl", Long.toString(System.currentTimeMillis() + (ttl * 1000L)));
 
         try {
             //Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
             //Locale locale = session.getContext().resolveLocale(user);
             //String emailAuthText = theme.getMessages(locale).getProperty("emailAuthText");
-            String emailText = "Segue seu codigo valido por 2 minutes"; //String.format(emailAuthText, code, Math.floorDiv(ttl, 60));
+            String emailText = "Segue seu codigo valido por 2 minutes \n\n Seu Codigo => " + code; //String.format(emailAuthText, code, Math.floorDiv(ttl, 60));
 
             DefaultEmailSenderProvider senderProvider = new DefaultEmailSenderProvider(session);
             senderProvider.send(
@@ -61,6 +63,7 @@ public class EmailAuthenticator implements Authenticator , AuthenticatorFactory 
 
 
             //context.challenge(context.form().setAttribute("realm", context.getRealm()).createForm(TPL_CODE));
+            context.success();
         } catch (Exception e) {
             context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR,
                     context.form().setError("emailAuthEmailNotSent", e.getMessage())

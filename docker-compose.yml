@@ -28,10 +28,14 @@ services:
       - "5005:5005"
     volumes:
       - ./build/libs:/opt/keycloak/providers
+      - kc_data:/opt/keycloak/data
     depends_on: ["postgres"]
     command:
       - start-dev
 
 volumes:
+  kc_data:
   postgres_data:
     driver: local
+
+

@@ -13,6 +13,9 @@ dependencies {
     compileOnly group: 'org.keycloak', name: 'keycloak-server-spi-private', version: '21.1.2'
     compileOnly group: 'org.keycloak', name: 'keycloak-server-spi', version: '21.1.2'
     compileOnly group: 'org.keycloak', name: 'keycloak-services', version: '21.1.2'
+    implementation group: 'org.keycloak', name: 'keycloak-common', version: '21.1.2'
+
+
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
