@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.github.diegolirio'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly group: 'org.keycloak', name: 'keycloak-server-spi-private', version: '23.0.6'
+    compileOnly group: 'org.keycloak', name: 'keycloak-server-spi', version: '23.0.6'
+    compileOnly group: 'org.keycloak', name: 'keycloak-services', version: '25.0.6'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
